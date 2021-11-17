@@ -32,11 +32,25 @@
     <div class="row">
 
         <div class="col-12">
-            <table id="table_id" class="display">
+            <form method="post" action="/Book/Searching">
+                <div class="form-group">
+                    <label for="exampleInputEmail1">Searching</label>
+                    <input class="form-control"  name="Searching" type="text" placeholder="Searching" />
+                </div>
+                <button type="submit" class="btn btn-primary">Searching</button>
+            </form>
+
+        </div>
+    </div>
+    <div class="row">
+
+        <div class="col-12">
+            <table  class="display" style=" width: 100%; ">
                 <thead>
                 <tr>
                     <th>Book Name</th>
                     <th>Category Name</th>
+                    <th>Status</th>
                     <th>Action</th>
 
                 </tr>
@@ -47,9 +61,20 @@
                 <tr>
                     <td>{{.Name}}</td>
                     <td>{{.Cat_Name}}</td>
+
+                    {{if .Status}}
+                    <td><button type="button" class="btn btn-success">Active</button></td>
+                    {{else}}
+                    <td><button type="button" class="btn btn-danger">Deactivate</button></td>
+                    {{end}}
                     <td>
                         <a href="/Book/{{.ID}}/edit" class="btn btn-secondary">Edit</a>
                         <a href="/Book/{{.ID}}/delete" class="btn btn-warning">Delete</a>
+                        {{if .Status}}
+                        <a href="/Book/{{.ID}}/deactivate" class="btn btn-danger">Deactivate</a>
+                        {{else}}
+                        <a href="/Book/{{.ID}}/active" class="btn btn-success">Active</a>
+                        {{end}}
                     </td>
                 </tr>
                 {{end}}

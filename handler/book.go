@@ -32,7 +32,7 @@ func (h *Handler) bookList(rw http.ResponseWriter, r *http.Request) {
 
 	books := []BookData{}
 	//h.db.Select(&book, "SELECT * from books INNER JOIN category on books.cat_id = category.id")
-	h.db.Select(&books, "SELECT * FROM books")
+	h.db.Select(&books, "SELECT * FROM books order by id desc")
 
 	for key, value := range books {
 		const getCat = `SELECT name FROM category WHERE id=$1`
@@ -194,11 +194,6 @@ func (h *Handler) bookdelete(rw http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	Id := vars["id"]
 
-	if Id == "" {
-		http.Error(rw, "Invalid URL", http.StatusInternalServerError)
-		return
-	}
-
 	const deleteCategory = `DELETE FROM books WHERE id=$1`
 	res := h.db.MustExec(deleteCategory, Id)
 
@@ -208,3 +203,54 @@ func (h *Handler) bookdelete(rw http.ResponseWriter, r *http.Request) {
 	}
 	http.Redirect(rw, r, "/Book/List", http.StatusTemporaryRedirect)
 }
+
+func (h *Handler) bookActive(rw http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	Id := vars["id"]
+
+	const updateStatusTodo = `UPDATE books SET status = true WHERE id=$1`
+	res := h.db.MustExec(updateStatusTodo, Id)
+
+	if ok, err := res.RowsAffected(); err != nil || ok == 0 {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(rw, r, "/Book/List", http.StatusTemporaryRedirect)
+}
+
+func (h *Handler) bookDeactivate(rw http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	Id := vars["id"]
+
+	const updateStatusTodo = `UPDATE books SET status = false WHERE id=$1`
+	res := h.db.MustExec(updateStatusTodo, Id)
+
+	if ok, err := res.RowsAffected(); err != nil || ok == 0 {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(rw, r, "/Book/List", http.StatusTemporaryRedirect)
+}
+
+//func (h *Handler) bookSearching(rw http.ResponseWriter, r *http.Request) {
+//	if err := r.ParseForm(); err != nil {
+//		http.Error(rw, err.Error(), http.StatusInternalServerError)
+//		return
+//	}
+//	ser := r.FormValue("Searching")
+//
+//	books := []BookData{}
+//
+//	h.db.Select(&books, "SELECT * FROM books where name Like '%$1%'")
+//
+//	lt := BookListData{
+//		Book: books,
+//	}
+//
+//	if err := h.templates.ExecuteTemplate(rw, "Searching.html", lt); err != nil {
+//		http.Error(rw, err.Error(), http.StatusInternalServerError)
+//		return
+//	}
+//}

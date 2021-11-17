@@ -131,16 +131,6 @@ func (h *Handler) categoryUpdate(rw http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	Id := vars["id"]
 
-	if Id == "" {
-		http.Error(rw, "Invalid URL", http.StatusInternalServerError)
-		return
-	}
-
-	if err := r.ParseForm(); err != nil {
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	var catfild FormData
 
 	if err := h.decoder.Decode(&catfild, r.PostForm); err != nil {
