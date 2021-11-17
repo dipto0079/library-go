@@ -5,19 +5,30 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
-    <title>Edit Category</title>
+    <title>Create Category</title>
 </head>
 <body>
 <div class="container ">
     <div class="row">
         <div class="col-sm-6">
-            <form method="post" action="/Category/{{.ID}}/update">
+            <form method="post" action="/Book/store">
                 <div class="form-group">
                     <label for="exampleInputEmail1">Category Name</label>
                     <input class="form-control" value="{{.Name}}" name="Name" type="text" placeholder="Enter Category" />
                     <small class="text-danger">{{.Errors.name}}</small>
                 </div>
-                <button type="submit" class="btn btn-primary">Update Category</button>
+                <div class="form-group">
+                    <label for="exampleInputEmail1">Category Name</label>
+                    <select class="form-control" aria-label="Default select example" name="Cat_id">
+                        <option selected>Select a Category</option>
+                        {{ range .Category}}
+                        <option value="{{.ID}}">{{.Name}}</option>
+                        {{end}}
+                    </select>
+                    <small class="text-danger">{{.Errors.name}}</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Create Book</button>
             </form>
         </div>
     </div>

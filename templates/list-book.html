@@ -17,12 +17,12 @@
     <div class="row">
         <div class="col-md-6">
             <div class="body" style="text-align: center;">
-                <a class="btn btn-primary" href="/Category/create">Category Create</a>
+                <a class="btn btn-primary" href="/Book/create">Book Create</a>
             </div>
         </div>
         <div class="col-md-6">
             <div class="body" style="text-align: center;">
-                <a class="btn btn-primary" href="/Category/List">Category list</a>
+                <a class="btn btn-primary" href="/Book/List">Book list</a>
             </div>
         </div>
     </div>
@@ -35,19 +35,21 @@
             <table id="table_id" class="display">
                 <thead>
                 <tr>
-                    <th>Name</th>
+                    <th>Book Name</th>
+                    <th>Category Name</th>
                     <th>Action</th>
 
                 </tr>
                 </thead>
                 <tbody>
-                {{range.Category}}
+                {{range.Book}}
 
                 <tr>
                     <td>{{.Name}}</td>
+                    <td>{{.Cat_id}}</td>
                     <td>
-                        <a href="/Category/{{.ID}}/edit" class="btn btn-secondary">Edit</a>
-                        <a href="/Category/{{.ID}}/delete" class="btn btn-warning">Delete</a>
+                        <a href="/Category/edit/{{.ID}}" class="btn btn-secondary">Edit</a>
+                        <a href="/Category/delete/{{.ID}}" class="btn btn-warning">Delete</a>
                     </td>
                 </tr>
                 {{end}}

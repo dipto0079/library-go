@@ -2,6 +2,7 @@ package main
 
 import (
 	"example.com/m/handler"
+	"github.com/gorilla/schema"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"log"
@@ -9,10 +10,18 @@ import (
 )
 
 func main() {
-	var schema = `
+	var createTable = `
 	CREATE TABLE IF NOT EXISTS category (
 		id serial,
 		name text,
+		
+		primary key(id)
+	);
+CREATE TABLE IF NOT EXISTS books (
+		id serial,
+		name text,
+		cat_id integer,
+		status boolean,
 		
 		primary key(id)
 	);
@@ -22,20 +31,15 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	db.MustExec(schema)
+	db.MustExec(createTable)
 
-	h := handler.New(db)
+	var decoder = schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(true)
 
-	http.HandleFunc("/", h.Home)
-	http.HandleFunc("/Category/List", h.CategoryList)
-	http.HandleFunc("/Category/create", h.CategoryCreate)
-	http.HandleFunc("/Category/store", h.CategoryStore)
-	http.HandleFunc("/Category/edit/", h.CategoryEdit)
-	http.HandleFunc("/Category/update/", h.CategoryUpdate)
-	http.HandleFunc("/Category/delete/", h.CategoryDelete)
+	r := handler.New(db, decoder)
 
 	log.Println("Server Starting....")
-	if err := http.ListenAndServe("127.0.0.1:3000", nil); err != nil {
+	if err := http.ListenAndServe("127.0.0.1:3000", r); err != nil {
 		log.Fatal(err)
 	}
 }
