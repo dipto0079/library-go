@@ -34,6 +34,9 @@ func New(db *sqlx.DB, decoder *schema.Decoder) *mux.Router {
 	r.HandleFunc("/Book/List", h.bookList)
 	r.HandleFunc("/Book/Create", h.bookCreate)
 	r.HandleFunc("/Book/store", h.bookStore)
+	r.HandleFunc("/Book/{id:[0-9]+}/edit", h.bookEdit)
+	r.HandleFunc("/Book/{id:[0-9]+}/update", h.bookUpdate)
+	r.HandleFunc("/Book/{id:[0-9]+}/delete", h.bookdelete)
 	r.NotFoundHandler = http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		if err := h.templates.ExecuteTemplate(rw, "404.html", nil); err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
@@ -51,6 +54,7 @@ func (h *Handler) parseTemplates() {
 		"templates/edit-category.html",
 		"templates/create-book.html",
 		"templates/list-book.html",
+		"templates/edit-book.html",
 		"templates/404.html",
 	))
 }

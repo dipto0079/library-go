@@ -14,10 +14,10 @@
 </head>
 <body>
 <div class="container">
-    <div class="row">
+    <div class="row" style=" margin-top: 10px; ">
         <div class="col-md-6">
             <div class="body" style="text-align: center;">
-                <a class="btn btn-primary" href="/Book/create">Book Create</a>
+                <a class="btn btn-primary" href="/Book/Create">Book Create</a>
             </div>
         </div>
         <div class="col-md-6">
@@ -31,7 +31,7 @@
 <div class="container">
     <div class="row">
 
-        <div class="col-md-12">
+        <div class="col-12">
             <table id="table_id" class="display">
                 <thead>
                 <tr>
@@ -46,10 +46,10 @@
 
                 <tr>
                     <td>{{.Name}}</td>
-                    <td>{{.Cat_id}}</td>
+                    <td>{{.Cat_Name}}</td>
                     <td>
-                        <a href="/Category/edit/{{.ID}}" class="btn btn-secondary">Edit</a>
-                        <a href="/Category/delete/{{.ID}}" class="btn btn-warning">Delete</a>
+                        <a href="/Book/{{.ID}}/edit" class="btn btn-secondary">Edit</a>
+                        <a href="/Book/{{.ID}}/delete" class="btn btn-warning">Delete</a>
                     </td>
                 </tr>
                 {{end}}
