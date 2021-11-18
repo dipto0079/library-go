@@ -13,12 +13,12 @@
         <div class="col-sm-6">
             <form method="post" action="/Book/store">
                 <div class="form-group">
-                    <label for="exampleInputEmail1">Book Name</label>
-                    <input class="form-control" value="{{.Name}}" name="Name" type="text" placeholder="Enter Category" />
+                    <label>Book Name</label>
+                    <input class="form-control" value="{{.Name}}" name="Name" type="text" placeholder="Enter Book" />
                     <small class="text-danger">{{.Errors.name}}</small>
                 </div>
                 <div class="form-group">
-                    <label for="exampleInputEmail1">Category Name</label>
+                    <label>Category Name</label>
                     <select class="form-control" aria-label="Default select example" name="Cat_id">
                         <option selected>Select a Category</option>
                         {{ range .Category}}

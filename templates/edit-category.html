@@ -13,7 +13,7 @@
         <div class="col-sm-6">
             <form method="post" action="/Category/{{.ID}}/update">
                 <div class="form-group">
-                    <label for="exampleInputEmail1">Category Name</label>
+                    <label>Category Name</label>
                     <input class="form-control" value="{{.Name}}" name="Name" type="text" placeholder="Enter Category" />
                     <small class="text-danger">{{.Errors.name}}</small>
                 </div>
