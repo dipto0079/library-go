@@ -245,6 +245,7 @@ func (h *Handler) bookDeactivate(rw http.ResponseWriter, r *http.Request) {
 //
 //	h.db.Select(&books, "SELECT * FROM books where name Like '%$1%'")
 //
+//
 //	lt := BookListData{
 //		Book: books,
 //	}
@@ -254,3 +255,5 @@ func (h *Handler) bookDeactivate(rw http.ResponseWriter, r *http.Request) {
 //		return
 //	}
 //}
+
+

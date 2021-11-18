@@ -26,7 +26,7 @@ type ListData struct {
 func (h *Handler) categoryList(rw http.ResponseWriter, r *http.Request) {
 
 	category := []FormData{}
-	h.db.Select(&category, "SELECT * FROM category")
+	h.db.Select(&category, "SELECT * FROM category order by id desc")
 	lt := ListData{
 		Category: category,
 	}
