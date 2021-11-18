@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -181,7 +182,7 @@ func (h *Handler) bookUpdate(rw http.ResponseWriter, r *http.Request) {
 		if ok {
 			vErrs := make(map[string]string)
 			for key, value := range valError {
-				vErrs[key] =value.Error()
+				vErrs[key] = value.Error()
 			}
 			h.editBookData(rw, id, book.Name, book.Cat_id, vErrs)
 			return
@@ -194,13 +195,15 @@ func (h *Handler) bookUpdate(rw http.ResponseWriter, r *http.Request) {
 	var books BookData
 	h.db.Get(&books, getBook, Id)
 
+	//fmt.Println(books)
+
 	if books.ID == 0 {
 		http.Error(rw, "Invalid URL", http.StatusInternalServerError)
 		return
 	}
 
 	const updateStatusCategory = `UPDATE books SET name=$1, cat_id=$2,status=$3 WHERE id=$4`
-	res := h.db.MustExec(updateStatusCategory, book.Name,book.Cat_id,true, Id)
+	res := h.db.MustExec(updateStatusCategory, book.Name, book.Cat_id, true, Id)
 
 	if ok, err := res.RowsAffected(); err != nil || ok == 0 {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
@@ -255,26 +258,35 @@ func (h *Handler) bookDeactivate(rw http.ResponseWriter, r *http.Request) {
 	http.Redirect(rw, r, "/Book/List", http.StatusTemporaryRedirect)
 }
 
-//func (h *Handler) bookSearching(rw http.ResponseWriter, r *http.Request) {
-//	if err := r.ParseForm(); err != nil {
-//		http.Error(rw, err.Error(), http.StatusInternalServerError)
-//		return
-//	}
-//	ser := r.FormValue("Searching")
-//
-//	books := []BookData{}
-//
-//	h.db.Select(&books, "SELECT * FROM books where name Like '%$1%'")
-//
-//
-//	lt := BookListData{
-//		Book: books,
-//	}
-//
-//	if err := h.templates.ExecuteTemplate(rw, "Searching.html", lt); err != nil {
-//		http.Error(rw, err.Error(), http.StatusInternalServerError)
-//		return
-//	}
-//}
+func (h *Handler) bookSearching(rw http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	ser := r.FormValue("Searching")
+	fmt.Println(ser)
+	if ser == "" {
+		http.Error(rw, "Invalid URL", http.StatusInternalServerError)
+		return
+	}
 
+	const getSrc = `SELECT * FROM books WHERE name ILIKE '%%' || $1 || '%%'`
+	var books []BookData
+	h.db.Select(&books, getSrc,ser)
 
+	for key, value := range books {
+		const getCat = `SELECT name FROM category WHERE id=$1`
+		var category FormData
+		h.db.Get(&category, getCat, value.Cat_id)
+		books[key].Cat_Name = category.Name
+	}
+
+	lt := BookListData{
+		Book: books,
+	}
+
+	if err := h.templates.ExecuteTemplate(rw, "list-book.html", lt); err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}

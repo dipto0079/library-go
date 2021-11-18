@@ -4,6 +4,7 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gorilla/mux"
 	"net/http"
+	"strconv"
 )
 
 type FormData struct {
@@ -138,6 +139,12 @@ func (h *Handler) categoryUpdate(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	id, err := strconv.Atoi(Id)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	if aErr := catfild.Validate(); aErr != nil {
 		vErrors, ok := aErr.(validation.Errors)
 		if ok {
@@ -153,6 +160,14 @@ func (h *Handler) categoryUpdate(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	const getCategory = `SELECT * FROM category WHERE id=$1`
+	var cat FormData
+	h.db.Get(&cat, getCategory, Id)
+
+	if id == 0 {
+		http.Error(rw, "Invalid URL", http.StatusInternalServerError)
+		return
+	}
 	const updateStatusCategory = `UPDATE category SET name=$1 WHERE id=$2`
 	res := h.db.MustExec(updateStatusCategory, catfild.Name, Id)
 
