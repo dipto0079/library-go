@@ -190,6 +190,15 @@ func (h *Handler) bookUpdate(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	const getBook = `SELECT * FROM books WHERE id=$1`
+	var books BookData
+	h.db.Get(&books, getBook, Id)
+
+	if books.ID == 0 {
+		http.Error(rw, "Invalid URL", http.StatusInternalServerError)
+		return
+	}
+
 	const updateStatusCategory = `UPDATE books SET name=$1, cat_id=$2,status=$3 WHERE id=$4`
 	res := h.db.MustExec(updateStatusCategory, book.Name,book.Cat_id,true, Id)
 
