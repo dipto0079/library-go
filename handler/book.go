@@ -4,6 +4,7 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gorilla/mux"
 	"net/http"
+	"strconv"
 )
 
 type BookData struct {
@@ -153,33 +154,44 @@ func (h *Handler) editBookData(rw http.ResponseWriter, id int, name string, cat_
 
 //Update
 func (h *Handler) bookUpdate(rw http.ResponseWriter, r *http.Request) {
+	categories := []FormData{}
+	h.db.Select(&categories, "SELECT * FROM categories")
+
 	vars := mux.Vars(r)
 	Id := vars["id"]
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	var book BookData
 	if err := h.decoder.Decode(&book, r.PostForm); err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	if aErr := book.Validate(); aErr != nil {
-		//fmt.Printf("%T", aErr)
-		vErrors, ok := aErr.(validation.Errors)
-		if ok {
-			vErr := make(map[string]string)
-			for key, value := range vErrors {
-				vErr[key] = value.Error()
-			}
-			h.createFormData(rw, book.Name, vErr)
-			return
-		}
-
-		http.Error(rw, aErr.Error(), http.StatusInternalServerError)
+	id, err := strconv.Atoi(Id)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	const updateStatusCategory = `UPDATE books SET(name,cat_id,status) VALUES ($1,$2,$3)`
-	res := h.db.MustExec(updateStatusCategory, book.Name, Id)
+	if err := book.Validate(); err != nil {
+		valError, ok := err.(validation.Errors)
+		if ok {
+			vErrs := make(map[string]string)
+			for key, value := range valError {
+				vErrs[key] =value.Error()
+			}
+			h.editBookData(rw, id, book.Name, book.Cat_id, vErrs)
+			return
+		}
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	const updateStatusCategory = `UPDATE books SET name=$1, cat_id=$2,status=$3 WHERE id=$4`
+	res := h.db.MustExec(updateStatusCategory, book.Name,book.Cat_id,true, Id)
 
 	if ok, err := res.RowsAffected(); err != nil || ok == 0 {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
