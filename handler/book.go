@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -264,7 +263,6 @@ func (h *Handler) bookSearching(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ser := r.FormValue("Searching")
-	fmt.Println(ser)
 	if ser == "" {
 		http.Error(rw, "Invalid URL", http.StatusInternalServerError)
 		return

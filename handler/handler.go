@@ -30,6 +30,7 @@ func New(db *sqlx.DB, decoder *schema.Decoder) *mux.Router {
 	r.HandleFunc("/Category/{id:[0-9]+}/edit", h.categoryEdit)
 	r.HandleFunc("/Category/{id:[0-9]+}/update", h.categoryUpdate)
 	r.HandleFunc("/Category/{id:[0-9]+}/delete", h.categoryDelete)
+	r.HandleFunc("/Category/Searching", h.categorySearching)
 	//Book
 	r.HandleFunc("/Book/List", h.bookList)
 	r.HandleFunc("/Book/Searching", h.bookSearching)
