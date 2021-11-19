@@ -25,6 +25,14 @@ CREATE TABLE IF NOT EXISTS books (
 		
 		primary key(id)
 	);
+CREATE TABLE IF NOT EXISTS bookings (
+		id serial,
+		book_id integer,
+		user_id integer,
+		start_time  timestamp,
+		end_time timestamp,
+		primary key(id)
+	);
 `
 	db, err := sqlx.Connect("postgres", "user=postgres password=dipto dbname=library sslmode=disable")
 	if err != nil {

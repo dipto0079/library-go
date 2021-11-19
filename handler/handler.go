@@ -23,6 +23,7 @@ func New(db *sqlx.DB, decoder *schema.Decoder) *mux.Router {
 	h.parseTemplates()
 	r := mux.NewRouter()
 	r.HandleFunc("/", h.Home)
+	r.HandleFunc("/home/Searching", h.homeSearching)
 	//Category
 	r.HandleFunc("/Category/List", h.categoryList)
 	r.HandleFunc("/Category/create", h.categoryCreate)
@@ -41,6 +42,10 @@ func New(db *sqlx.DB, decoder *schema.Decoder) *mux.Router {
 	r.HandleFunc("/Book/{id:[0-9]+}/edit", h.bookEdit)
 	r.HandleFunc("/Book/{id:[0-9]+}/update", h.bookUpdate)
 	r.HandleFunc("/Book/{id:[0-9]+}/delete", h.bookdelete)
+	//Booking
+	r.HandleFunc("/Booking/{id:[0-9]+}/Create", h.bookingCreate)
+	r.HandleFunc("/Booking/{id:[0-9]+}/Booking", h.bookingStore)
+
 	r.NotFoundHandler = http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		if err := h.templates.ExecuteTemplate(rw, "404.html", nil); err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
@@ -60,5 +65,6 @@ func (h *Handler) parseTemplates() {
 		"templates/list-book.html",
 		"templates/edit-book.html",
 		"templates/404.html",
+		"templates/create-booking.html",
 	))
 }

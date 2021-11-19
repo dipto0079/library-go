@@ -19,7 +19,8 @@
                 </div>
                 <div class="form-group">
                     <label>Category Name</label>
-                    <select class="form-control" aria-label="Default select example" name="Cat_id">
+                    <input type="hidden" id="Cat_ID" name="Cat_ID" value="{{.Cat_id}}">
+                    <select class="form-control" id="catselect" aria-label="Default select example" name="Cat_id">
                         <option selected>Select a Category</option>
                         {{ range .Category}}
                         <option value="{{.ID}}">{{.Name}}</option>
@@ -35,6 +36,19 @@
 </div>
 
 </body>
+<script>
+    var select = document.getElementById('catselect');
+    var catID = document.getElementById('Cat_ID').value;
+    var option;
+
+    for (var i=0; i<select.options.length; i++) {
+        option = select.options[i];
+
+        if (option.value == catID) {
+            option.setAttribute('selected', true);
+        }
+    }
+</script>
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
