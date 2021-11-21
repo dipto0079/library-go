@@ -23,6 +23,10 @@ func New(db *sqlx.DB, decoder *schema.Decoder) *mux.Router {
 	h.parseTemplates()
 	r := mux.NewRouter()
 	r.HandleFunc("/", h.Home)
+	r.HandleFunc("/Registration", h.registrationCreate)
+	r.HandleFunc("/login", h.login)
+	r.HandleFunc("/User/login", h.userLogin)
+	r.HandleFunc("/User/Store", h.UserStore)
 	r.HandleFunc("/home/Searching", h.homeSearching)
 	//Category
 	r.HandleFunc("/Category/List", h.categoryList)
@@ -66,5 +70,7 @@ func (h *Handler) parseTemplates() {
 		"templates/edit-book.html",
 		"templates/404.html",
 		"templates/create-booking.html",
+		"templates/registration.html",
+		"templates/login.html",
 	))
 }

@@ -7,6 +7,7 @@ import (
 	_ "github.com/lib/pq"
 	"log"
 	"net/http"
+
 )
 
 func main() {
@@ -31,6 +32,15 @@ CREATE TABLE IF NOT EXISTS bookings (
 		user_id integer,
 		start_time  timestamp,
 		end_time timestamp,
+		primary key(id)
+	);
+
+CREATE TABLE IF NOT EXISTS users (
+		id serial,
+		name text,
+		email text,
+		password  text,
+
 		primary key(id)
 	);
 `

@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -91,7 +90,7 @@ func (h *Handler) bookingStore(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Println(booking)
+	//fmt.Println(booking)
 
 	if err := booking.Validate(); err != nil {
 		valError, ok := err.(validation.Errors)
