@@ -132,3 +132,36 @@ func (h *Handler) bookingStore(rw http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(rw, r, "/", http.StatusTemporaryRedirect)
 }
+
+func (h *Handler) bookiSingleList(rw http.ResponseWriter, r *http.Request) {
+
+	//vars := mux.Vars(r)
+	//Id := vars["id"]
+	//
+	//if Id == "" {
+	//	http.Error(rw, "Invalid URL", http.StatusInternalServerError)
+	//	return
+	//}
+	//
+	//const getBooking = `SELECT * FROM bookings WHERE id=$1`
+	//var booking []Booking{}
+	//h.db.Get(&booking, getBooking, Id)
+	//
+	//
+	//
+	//for key, value := range booking {
+	//	const getCat = `SELECT name FROM books WHERE id=$1`
+	//	var books BookListData
+	//	h.db.Get(&books, getCat, value.book_id)
+	//	booking[key].Cat_Name = category.Name
+	//}
+	//
+	//lt := BookListData{
+	//	Book: books,
+	//}
+	//
+	//if err := h.templates.ExecuteTemplate(rw, "list-book.html", lt); err != nil {
+	//	http.Error(rw, err.Error(), http.StatusInternalServerError)
+	//	return
+	//}
+}

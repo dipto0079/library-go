@@ -26,6 +26,7 @@ func New(db *sqlx.DB, decoder *schema.Decoder) *mux.Router {
 	r.HandleFunc("/Registration", h.registrationCreate)
 	r.HandleFunc("/login", h.login)
 	r.HandleFunc("/User/login", h.userLogin)
+	r.HandleFunc("/User/logout", h.userLogout)
 	r.HandleFunc("/User/Store", h.UserStore)
 	r.HandleFunc("/home/Searching", h.homeSearching)
 	//Category
@@ -49,6 +50,7 @@ func New(db *sqlx.DB, decoder *schema.Decoder) *mux.Router {
 	//Booking
 	r.HandleFunc("/Booking/{id:[0-9]+}/Create", h.bookingCreate)
 	r.HandleFunc("/Booking/{id:[0-9]+}/Booking", h.bookingStore)
+	r.HandleFunc("/Booking/{id:[0-9]+}/single-list", h.bookiSingleList)
 
 	r.NotFoundHandler = http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		if err := h.templates.ExecuteTemplate(rw, "404.html", nil); err != nil {

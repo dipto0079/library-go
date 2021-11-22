@@ -3,8 +3,8 @@ package handler
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gorilla/sessions"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
-
 )
 type RegistrationData struct {
 	ID     int    `db:"id" json:"id"`
@@ -76,9 +76,21 @@ func (h *Handler) UserStore(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	password := []byte(user.Password)
 
-	const insertBook = `INSERT INTO users(name,email,password) VALUES ($1,$2,$3)`
-	res := h.db.MustExec(insertBook, user.Name, user.Email,user.Password)
+	// Hashing the password with the default cost of 10
+	hashedPassword, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
+	if err != nil {
+		panic(err)
+	}
+	//fmt.Println(string(hashedPassword))
+
+	// Comparing the password with the hash
+	err = bcrypt.CompareHashAndPassword(hashedPassword, password)
+
+
+	const insertUser = `INSERT INTO users(name,email,password) VALUES ($1,$2,$3)`
+	res := h.db.MustExec(insertUser, user.Name, user.Email,hashedPassword)
 	if ok, err := res.RowsAffected(); err != nil || ok == 0 {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
@@ -137,7 +149,7 @@ func (h *Handler) userLogin(rw http.ResponseWriter, r *http.Request) {
 
 	session, _ := cookie.Get(r, "Golang-session")
 	session.Values["authenticated"] = true
-	//session.Save(r, w)
+	session.Save(r, rw)
 
 	var usermail = user.Email
 
@@ -146,4 +158,13 @@ func (h *Handler) userLogin(rw http.ResponseWriter, r *http.Request) {
 	h.db.Get(&loginuser, getuser, usermail)
 
 	http.Redirect(rw, r, "/", http.StatusTemporaryRedirect)
+}
+
+func (h *Handler) userLogout(rw http.ResponseWriter, r *http.Request) {
+
+	session, _ := cookie.Get(r, "Golang-session")
+	session.Values["authenticated"] = false
+	session.Save(r, rw)
+	//fmt.Fprintf(w, "Successfully Logged Out")
+
 }

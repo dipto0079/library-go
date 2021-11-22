@@ -32,7 +32,6 @@ func (b *BookData) Validate() error {
 func (h *Handler) bookList(rw http.ResponseWriter, r *http.Request) {
 
 	books := []BookData{}
-	//h.db.Select(&book, "SELECT * from books INNER JOIN category on books.cat_id = category.id")
 	h.db.Select(&books, "SELECT * FROM books order by id desc")
 
 	for key, value := range books {
