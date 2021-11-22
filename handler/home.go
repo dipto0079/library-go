@@ -1,13 +1,25 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 )
 
 func (h *Handler) Home(rw http.ResponseWriter, r *http.Request) {
+
+	queryFilter := r.URL.Query().Get("query")
+
+	///fmt.Println(queryFilter)
 	books := []BookData{}
 	//h.db.Select(&book, "SELECT * from books INNER JOIN category on books.cat_id = category.id")
-	h.db.Select(&books, "SELECT * FROM books order by id desc")
+
+	nameQuery := `SELECT * FROM books WHERE name ILIKE '%%' || $1 || '%%' order by id desc`
+	if err := h.db.Select(&books, nameQuery, queryFilter); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	//fmt.Println(books)
 
 	for key, value := range books {
 		const getCat = `SELECT name FROM category WHERE id=$1`
@@ -18,6 +30,7 @@ func (h *Handler) Home(rw http.ResponseWriter, r *http.Request) {
 
 	lt := BookListData{
 		Book: books,
+		QueryFilter: queryFilter,
 	}
 
 	if err := h.templates.ExecuteTemplate(rw, "index.html", lt); err != nil {
@@ -38,7 +51,7 @@ func (h *Handler) homeSearching(rw http.ResponseWriter, r *http.Request) {
 
 	const getSrc = `SELECT * FROM books WHERE name ILIKE '%%' || $1 || '%%'`
 	var books []BookData
-	h.db.Select(&books, getSrc,ser)
+	h.db.Select(&books, getSrc, ser)
 
 	for key, value := range books {
 		const getCat = `SELECT name FROM category WHERE id=$1`

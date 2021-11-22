@@ -21,15 +21,23 @@ func (c *FormData) Validate() error {
 
 type ListData struct {
 	Category []FormData
+	QueryFilter string
 }
 
 // Show
 func (h *Handler) categoryList(rw http.ResponseWriter, r *http.Request) {
-
+	queryFilter := r.URL.Query().Get("query")
 	category := []FormData{}
-	h.db.Select(&category, "SELECT * FROM category order by id desc")
+
+	nameQuery := `SELECT * FROM category WHERE name ILIKE '%%' || $1 || '%%' order by id desc`
+	if err := h.db.Select(&category, nameQuery, queryFilter); err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	lt := ListData{
 		Category: category,
+		QueryFilter: queryFilter,
 	}
 	if err := h.templates.ExecuteTemplate(rw, "list-category.html", lt); err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
@@ -200,27 +208,27 @@ func (h *Handler) categoryDelete(rw http.ResponseWriter, r *http.Request) {
 }
 
 
-func (h *Handler) categorySearching(rw http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	ser := r.FormValue("Searching")
-
-	if ser == "" {
-		http.Error(rw, "Invalid URL", http.StatusInternalServerError)
-		return
-	}
-
-	const getSrc = `SELECT * FROM category WHERE name ILIKE '%%' || $1 || '%%'`
-	var cat []FormData
-	h.db.Select(&cat, getSrc,ser)
-
-	lt := ListData{
-		Category: cat,
-	}
-	if err := h.templates.ExecuteTemplate(rw, "list-category.html", lt); err != nil {
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
-		return
-	}
-}
+//func (h *Handler) categorySearching(rw http.ResponseWriter, r *http.Request) {
+//	if err := r.ParseForm(); err != nil {
+//		http.Error(rw, err.Error(), http.StatusInternalServerError)
+//		return
+//	}
+//	ser := r.FormValue("Searching")
+//
+//	if ser == "" {
+//		http.Error(rw, "Invalid URL", http.StatusInternalServerError)
+//		return
+//	}
+//
+//	const getSrc = `SELECT * FROM category WHERE name ILIKE '%%' || $1 || '%%'`
+//	var cat []FormData
+//	h.db.Select(&cat, getSrc,ser)
+//
+//	lt := ListData{
+//		Category: cat,
+//	}
+//	if err := h.templates.ExecuteTemplate(rw, "list-category.html", lt); err != nil {
+//		http.Error(rw, err.Error(), http.StatusInternalServerError)
+//		return
+//	}
+//}

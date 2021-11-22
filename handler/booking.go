@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -12,7 +13,7 @@ type Booking struct {
 	User_id   int    `db:"user_id" json:"user_id"`
 	Book_id   int    `db:"book_id" json:"book_id"`
 	Start_time   string    `db:"start_time" json:"start_time"`
-	End_time   string    `db:"end_time" json:"start_time"`
+	End_time   string    `db:"end_time" json:"end_time"`
 	Errors   map[string]string
 }
 
@@ -90,7 +91,6 @@ func (h *Handler) bookingStore(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	//fmt.Println(booking)
 
 	if err := booking.Validate(); err != nil {
 		valError, ok := err.(validation.Errors)
@@ -105,12 +105,9 @@ func (h *Handler) bookingStore(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	const getBook = `SELECT * FROM books WHERE id=$1`
 	var books BookData
 	h.db.Get(&books, getBook, Id)
-
-
 
 	if books.ID == 0 {
 		http.Error(rw, "Invalid URL", http.StatusInternalServerError)
@@ -135,20 +132,23 @@ func (h *Handler) bookingStore(rw http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) bookiSingleList(rw http.ResponseWriter, r *http.Request) {
 
-	//vars := mux.Vars(r)
-	//Id := vars["id"]
-	//
-	//if Id == "" {
-	//	http.Error(rw, "Invalid URL", http.StatusInternalServerError)
-	//	return
-	//}
-	//
-	//const getBooking = `SELECT * FROM bookings WHERE id=$1`
-	//var booking []Booking{}
-	//h.db.Get(&booking, getBooking, Id)
-	//
-	//
-	//
+	vars := mux.Vars(r)
+	Id := vars["id"]
+
+	if Id == "" {
+		http.Error(rw, "Invalid URL", http.StatusInternalServerError)
+		return
+	}
+	var booking Booking
+	const getBooking = `SELECT * FROM bookings WHERE book_id=$1`
+	h.db.Get(&booking, getBooking, Id)
+
+	fmt.Println(booking)
+
+	if err := h.templates.ExecuteTemplate(rw, "single-book.html", booking); err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	//for key, value := range booking {
 	//	const getCat = `SELECT name FROM books WHERE id=$1`
 	//	var books BookListData
@@ -165,3 +165,4 @@ func (h *Handler) bookiSingleList(rw http.ResponseWriter, r *http.Request) {
 	//	return
 	//}
 }
+

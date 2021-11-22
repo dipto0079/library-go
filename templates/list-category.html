@@ -32,15 +32,24 @@
     <div class="row">
 
         <div class="col-12">
-            <form method="post" action="/Category/Searching">
+            <div class="col-6">
                 <div class="form-group">
-                    <label >Searching</label>
-                    <input class="form-control" autocomplete="off"  name="Searching" type="text" placeholder="Searching" />
+                    <input onkeydown="search(this)" value="{{.QueryFilter}}" class="form-control" autocomplete="off"
+                           name="Searching" type="text" placeholder="Searching"/>
                 </div>
-                <button type="submit" class="btn btn-primary">Searching</button>
-            </form>
+            </div>
 
         </div>
+        <script>
+            function search(ele) {
+                if (event.key === 'Enter') {
+                    searchVal = ele.value
+                    var searchParams = new URLSearchParams(window.location.search);
+                    searchParams.set("query", searchVal);
+                    window.location.search = searchParams.toString();
+                }
+            }
+        </script>
     </div>
     <div class="row">
 

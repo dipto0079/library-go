@@ -32,25 +32,33 @@
     <div class="row">
 
         <div class="col-12">
-            <form method="post" action="/Book/Searching">
-                <div class="row" style="margin-top: 12px;">
-                    <div class="col-6">
-                        <div class="form-group">
-                            <input class="form-control" autocomplete="off"  name="Searching" type="text" placeholder="Searching" />
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <button type="submit" class="btn btn-primary">Searching</button>
+
+            <div class="row" style="margin-top: 12px;">
+
+                <div class="col-6">
+                    <div class="form-group">
+                        <input onkeydown="search(this)" value="{{.QueryFilter}}" class="form-control" autocomplete="off"
+                               name="Searching" type="text" placeholder="Searching"/>
                     </div>
                 </div>
-            </form>
+            </div>
 
         </div>
+        <script>
+            function search(ele) {
+                if (event.key === 'Enter') {
+                    searchVal = ele.value
+                    var searchParams = new URLSearchParams(window.location.search);
+                    searchParams.set("query", searchVal);
+                    window.location.search = searchParams.toString();
+                }
+            }
+        </script>
     </div>
     <div class="row">
 
         <div class="col-12">
-            <table  class="display" style=" width: 100%; ">
+            <table class="display" style=" width: 100%; ">
                 <thead>
                 <tr>
                     <th>Book Name</th>
@@ -68,9 +76,13 @@
                     <td>{{.Cat_Name}}</td>
 
                     {{if .Status}}
-                    <td><button type="button" class="btn btn-success">Active</button></td>
+                    <td>
+                        <button type="button" class="btn btn-success">Active</button>
+                    </td>
                     {{else}}
-                    <td><button type="button" class="btn btn-danger">Deactivate</button></td>
+                    <td>
+                        <button type="button" class="btn btn-danger">Deactivate</button>
+                    </td>
                     {{end}}
                     <td>
                         <a href="/Book/{{.ID}}/edit" class="btn btn-secondary">Edit</a>

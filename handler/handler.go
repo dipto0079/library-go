@@ -36,10 +36,10 @@ func New(db *sqlx.DB, decoder *schema.Decoder) *mux.Router {
 	r.HandleFunc("/Category/{id:[0-9]+}/edit", h.categoryEdit)
 	r.HandleFunc("/Category/{id:[0-9]+}/update", h.categoryUpdate)
 	r.HandleFunc("/Category/{id:[0-9]+}/delete", h.categoryDelete)
-	r.HandleFunc("/Category/Searching", h.categorySearching)
+	//r.HandleFunc("/Category/Searching", h.categorySearching)
 	//Book
 	r.HandleFunc("/Book/List", h.bookList)
-	r.HandleFunc("/Book/Searching", h.bookSearching)
+	//r.HandleFunc("/Book/Searching", h.bookSearching)
 	r.HandleFunc("/Book/Create", h.bookCreate)
 	r.HandleFunc("/Book/store", h.bookStore)
 	r.HandleFunc("/Book/{id:[0-9]+}/active", h.bookActive)
@@ -74,5 +74,6 @@ func (h *Handler) parseTemplates() {
 		"templates/create-booking.html",
 		"templates/registration.html",
 		"templates/login.html",
+		"templates/single-book.html",
 	))
 }

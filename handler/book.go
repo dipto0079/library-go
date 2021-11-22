@@ -1,10 +1,11 @@
 package handler
 
 import (
-	validation "github.com/go-ozzo/ozzo-validation"
-	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
+
+	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/gorilla/mux"
 )
 
 type BookData struct {
@@ -18,7 +19,8 @@ type BookData struct {
 }
 
 type BookListData struct {
-	Book []BookData
+	Book        []BookData
+	QueryFilter string
 }
 
 func (b *BookData) Validate() error {
@@ -30,9 +32,16 @@ func (b *BookData) Validate() error {
 
 // Show
 func (h *Handler) bookList(rw http.ResponseWriter, r *http.Request) {
+	queryFilter := r.URL.Query().Get("query")
 
 	books := []BookData{}
-	h.db.Select(&books, "SELECT * FROM books order by id desc")
+
+	nameQuery := `SELECT * FROM books WHERE name ILIKE '%%' || $1 || '%%' order by id desc`
+	if err := h.db.Select(&books, nameQuery, queryFilter); err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 
 	for key, value := range books {
 		const getCat = `SELECT name FROM category WHERE id=$1`
@@ -43,6 +52,7 @@ func (h *Handler) bookList(rw http.ResponseWriter, r *http.Request) {
 
 	lt := BookListData{
 		Book: books,
+		QueryFilter: queryFilter,
 	}
 
 	if err := h.templates.ExecuteTemplate(rw, "list-book.html", lt); err != nil {
@@ -255,35 +265,35 @@ func (h *Handler) bookDeactivate(rw http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(rw, r, "/Book/List", http.StatusTemporaryRedirect)
 }
-
-func (h *Handler) bookSearching(rw http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	ser := r.FormValue("Searching")
-	if ser == "" {
-		http.Error(rw, "Invalid URL", http.StatusInternalServerError)
-		return
-	}
-
-	const getSrc = `SELECT * FROM books WHERE name ILIKE '%%' || $1 || '%%'`
-	var books []BookData
-	h.db.Select(&books, getSrc,ser)
-
-	for key, value := range books {
-		const getCat = `SELECT name FROM category WHERE id=$1`
-		var category FormData
-		h.db.Get(&category, getCat, value.Cat_id)
-		books[key].Cat_Name = category.Name
-	}
-
-	lt := BookListData{
-		Book: books,
-	}
-
-	if err := h.templates.ExecuteTemplate(rw, "list-book.html", lt); err != nil {
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
-		return
-	}
-}
+//
+//func (h *Handler) bookSearching(rw http.ResponseWriter, r *http.Request) {
+//	if err := r.ParseForm(); err != nil {
+//		http.Error(rw, err.Error(), http.StatusInternalServerError)
+//		return
+//	}
+//	ser := r.FormValue("Searching")
+//	if ser == "" {
+//		http.Error(rw, "Invalid URL", http.StatusInternalServerError)
+//		return
+//	}
+//
+//	const getSrc = `SELECT * FROM books WHERE name ILIKE '%%' || $1 || '%%'`
+//	var books []BookData
+//	h.db.Select(&books, getSrc, ser)
+//
+//	for key, value := range books {
+//		const getCat = `SELECT name FROM category WHERE id=$1`
+//		var category FormData
+//		h.db.Get(&category, getCat, value.Cat_id)
+//		books[key].Cat_Name = category.Name
+//	}
+//
+//	lt := BookListData{
+//		Book: books,
+//	}
+//
+//	if err := h.templates.ExecuteTemplate(rw, "list-book.html", lt); err != nil {
+//		http.Error(rw, err.Error(), http.StatusInternalServerError)
+//		return
+//	}
+//}
