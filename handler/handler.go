@@ -75,5 +75,6 @@ func (h *Handler) parseTemplates() {
 		"templates/registration.html",
 		"templates/login.html",
 		"templates/single-book.html",
+		"templates/single-booking.html",
 	))
 }

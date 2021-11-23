@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gorilla/sessions"
 	"golang.org/x/crypto/bcrypt"
@@ -12,6 +13,17 @@ type RegistrationData struct {
 	Email   string `db:"email" json:"email"`
 	Password   string `db:"password" json:"password"`
 	Errors map[string]string
+}
+type loginData struct {
+	Email string
+	Password string
+	Errors map[string]string
+}
+func (L *loginData) Validate() error {
+	return validation.ValidateStruct(L,
+		validation.Field(&L.Email, validation.Required.Error("This Filed cannot be blank")),
+		validation.Field(&L.Password, validation.Required.Error("This Filed cannot be blank")),
+	)
 }
 
 func (R *RegistrationData) Validate() error {
@@ -100,21 +112,20 @@ func (h *Handler) UserStore(rw http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) login(rw http.ResponseWriter, r *http.Request) {
 
-	vErrs := map[string]string{"name": "","email":"","password":""}
-	name := ""
+	vErrs := map[string]string{"email":"","password":""}
+
 	email := ""
 	password := ""
-	h.loginFormData(rw, name,email,password, vErrs)
+	h.loginFormData(rw,email,password, vErrs)
 	return
 
 }
 
-func (h *Handler) loginFormData(rw http.ResponseWriter, name string,email string,password string, errs map[string]string) {
-	form := RegistrationData{
-		Name:   name,
+func (h *Handler) loginFormData(rw http.ResponseWriter, email string,password string, errs map[string]string) {
+	form := loginData{
 		Email: email,
 		Password: password,
-		Errors: errs,
+
 	}
 	if err := h.templates.ExecuteTemplate(rw, "login.html", form); err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
@@ -123,39 +134,50 @@ func (h *Handler) loginFormData(rw http.ResponseWriter, name string,email string
 }
 
 func (h *Handler) userLogin(rw http.ResponseWriter, r *http.Request) {
+
 	if err := r.ParseForm(); err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	var user RegistrationData
-	if err := h.decoder.Decode(&user, r.PostForm); err != nil {
+	var usera loginData
+	if err := h.decoder.Decode(&usera, r.PostForm); err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if aErr := user.Validate(); aErr != nil {
+	if aErr := usera.Validate(); aErr != nil {
 		vErrors, ok := aErr.(validation.Errors)
 		if ok {
 			vErr := make(map[string]string)
 			for key, value := range vErrors {
 				vErr[key] = value.Error()
 			}
-			h.registrationFormData(rw, user.Name,user.Email,user.Password, vErr)
+			h.loginFormData(rw,usera.Email,usera.Password, vErr)
 			return
 		}
 		http.Error(rw, aErr.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	var usermail = usera.Email
+	password := []byte(usera.Password)
+	// Hashing the password with the default cost of 10
+	hashedPassword, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
+	if err != nil {
+		panic(err)
+	}
+	const getuser = `SELECT * FROM users WHERE email=$1 || password=$2`
+	var loginuser loginData
+	aerr:=	h.db.Get(&loginuser, getuser, usermail,hashedPassword)
+	fmt.Println(getuser)
+	if aerr !=nil{
+		http.Error(rw, aerr.Error(), http.StatusInternalServerError)
+		return
+	}
 	session, _ := cookie.Get(r, "Golang-session")
 	session.Values["authenticated"] = true
+	session.Values["username"] = usera.Email
 	session.Save(r, rw)
-
-	var usermail = user.Email
-
-	const getuser = `SELECT * FROM users WHERE email=$1`
-	var loginuser RegistrationData
-	h.db.Get(&loginuser, getuser, usermail)
 
 	http.Redirect(rw, r, "/", http.StatusTemporaryRedirect)
 }
