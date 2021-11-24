@@ -7,12 +7,11 @@ import (
 	_ "github.com/lib/pq"
 	"log"
 	"net/http"
-
 )
 
 func main() {
 	var createTable = `
-	CREATE TABLE IF NOT EXISTS category (
+CREATE TABLE IF NOT EXISTS category (
 		id serial,
 		name text,
 		
@@ -34,7 +33,6 @@ CREATE TABLE IF NOT EXISTS bookings (
 		end_time timestamp,
 		primary key(id)
 	);
-
 CREATE TABLE IF NOT EXISTS users (
 		id serial,
 		name text,

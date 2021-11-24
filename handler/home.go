@@ -9,7 +9,6 @@ func (h *Handler) Home(rw http.ResponseWriter, r *http.Request) {
 
 	queryFilter := r.URL.Query().Get("query")
 
-	///fmt.Println(queryFilter)
 	books := []BookData{}
 	//h.db.Select(&book, "SELECT * from books INNER JOIN category on books.cat_id = category.id")
 
@@ -19,7 +18,6 @@ func (h *Handler) Home(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//fmt.Println(books)
 
 	for key, value := range books {
 		const getCat = `SELECT name FROM category WHERE id=$1`

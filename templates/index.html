@@ -82,14 +82,14 @@
                     {{if .Status}}
                     <td><button type="button" class="btn btn-success">Active</button></td>
                     {{else}}
-                    <td><button type="button" class="btn btn-danger">Deactivate</button></td>
+                    <td><button type="button" class="btn btn-danger">InActivate</button></td>
                     {{end}}
 
                     <td>
                     {{if .Status}}
-                    <td><a href="/Booking/{{.ID}}/Create" class="btn btn-success">Booking</a></td>
+                    <td><a href="/Booking/{{.ID}}/Create" class="btn btn-success">Booking Now</a></td>
                     {{else}}
-                    <td><button type="button" class="btn btn-danger">Deactivate</button></td>
+                    <td><button type="button" class="btn btn-danger">Booking</button></td>
                     {{end}}
                     <td><a href="/Booking/{{.ID}}/single-list" class="btn btn-info">Show</a></td>
 

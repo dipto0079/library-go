@@ -147,11 +147,9 @@ func (h *Handler) bookiSingleList(rw http.ResponseWriter, r *http.Request) {
 
 	booking.ST = start_time
 	booking.ET = end_time
-	//fmt.Println(lt)
+
 	if err := h.templates.ExecuteTemplate(rw, "single-booking.html", booking); err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
-
-

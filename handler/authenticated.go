@@ -144,7 +144,6 @@ func (h *Handler) userLogin(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	if aErr := usera.Validate(); aErr != nil {
 		vErrors, ok := aErr.(validation.Errors)
 		if ok {
