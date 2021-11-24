@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
-
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gorilla/sessions"
 	"golang.org/x/crypto/bcrypt"
@@ -177,7 +175,7 @@ func (h *Handler) userLogin(rw http.ResponseWriter, r *http.Request) {
 
 
 
-	fmt.Println(hashedPassword)
+//	fmt.Println(hashedPassword)
 	const getuser = `SELECT * FROM users WHERE email=$1 `
 	var loginuser RegistrationData
 	aerr:=	h.db.Get(&loginuser, getuser, usermail)
@@ -190,7 +188,7 @@ func (h *Handler) userLogin(rw http.ResponseWriter, r *http.Request) {
 	session.Values["authenticated"] = true
 	session.Values["username"] = usera.Email
 	session.Save(r, rw)
-	fmt.Println(session.Values["username"])
+	//fmt.Println(session.Values["username"])
 
 	http.Redirect(rw, r, "/", http.StatusTemporaryRedirect)
 }
@@ -201,5 +199,5 @@ func (h *Handler) userLogout(rw http.ResponseWriter, r *http.Request) {
 	session.Values["authenticated"] = false
 	session.Save(r, rw)
 	//fmt.Fprintf(w, "Successfully Logged Out")
-
+	http.Redirect(rw, r, "/", http.StatusTemporaryRedirect)
 }
