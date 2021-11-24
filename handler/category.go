@@ -1,10 +1,11 @@
 package handler
 
 import (
-	validation "github.com/go-ozzo/ozzo-validation"
-	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
+
+	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/gorilla/mux"
 )
 
 type FormData struct {

@@ -42,7 +42,6 @@ func (h *Handler) bookList(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
 	for key, value := range books {
 		const getCat = `SELECT name FROM category WHERE id=$1`
 		var category FormData
@@ -51,7 +50,7 @@ func (h *Handler) bookList(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	lt := BookListData{
-		Book: books,
+		Book:        books,
 		QueryFilter: queryFilter,
 	}
 
@@ -265,6 +264,7 @@ func (h *Handler) bookDeactivate(rw http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(rw, r, "/Book/List", http.StatusTemporaryRedirect)
 }
+
 //
 //func (h *Handler) bookSearching(rw http.ResponseWriter, r *http.Request) {
 //	if err := r.ParseForm(); err != nil {
