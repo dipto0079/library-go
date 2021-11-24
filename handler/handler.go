@@ -28,7 +28,7 @@ func New(db *sqlx.DB, decoder *schema.Decoder) *mux.Router {
 	r.HandleFunc("/User/login", h.userLogin)
 	r.HandleFunc("/User/logout", h.userLogout)
 	r.HandleFunc("/User/Store", h.UserStore)
-	r.HandleFunc("/home/Searching", h.homeSearching)
+	//r.HandleFunc("/home/Searching", h.homeSearching)
 	//Category
 	r.HandleFunc("/Category/List", h.categoryList)
 	r.HandleFunc("/Category/create", h.categoryCreate)

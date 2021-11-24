@@ -2,10 +2,11 @@ package handler
 
 import (
 	"fmt"
+	"net/http"
+
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gorilla/sessions"
 	"golang.org/x/crypto/bcrypt"
-	"net/http"
 )
 type RegistrationData struct {
 	ID     int    `db:"id" json:"id"`
@@ -144,6 +145,8 @@ func (h *Handler) userLogin(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	
+
 	if aErr := usera.Validate(); aErr != nil {
 		vErrors, ok := aErr.(validation.Errors)
 		if ok {
@@ -159,16 +162,26 @@ func (h *Handler) userLogin(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	var usermail = usera.Email
+
 	password := []byte(usera.Password)
+
 	// Hashing the password with the default cost of 10
 	hashedPassword, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
 	if err != nil {
 		panic(err)
 	}
-	const getuser = `SELECT * FROM users WHERE email=$1 || password=$2`
-	var loginuser loginData
-	aerr:=	h.db.Get(&loginuser, getuser, usermail,hashedPassword)
-	fmt.Println(getuser)
+	//fmt.Println(string(hashedPassword))
+
+	// Comparing the password with the hash
+	err = bcrypt.CompareHashAndPassword(hashedPassword, password)
+
+
+
+	fmt.Println(hashedPassword)
+	const getuser = `SELECT * FROM users WHERE email=$1 `
+	var loginuser RegistrationData
+	aerr:=	h.db.Get(&loginuser, getuser, usermail)
+	
 	if aerr !=nil{
 		http.Error(rw, aerr.Error(), http.StatusInternalServerError)
 		return
@@ -177,6 +190,7 @@ func (h *Handler) userLogin(rw http.ResponseWriter, r *http.Request) {
 	session.Values["authenticated"] = true
 	session.Values["username"] = usera.Email
 	session.Save(r, rw)
+	fmt.Println(session.Values["username"])
 
 	http.Redirect(rw, r, "/", http.StatusTemporaryRedirect)
 }
