@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"fmt"
+	
 	"net/http"
 )
 
@@ -10,7 +10,7 @@ func (h *Handler) Home(rw http.ResponseWriter, r *http.Request) {
 	session, _ := cookie.Get(r, "Golang-session")
 	var authenticated interface{} = session.Values["authenticated"]
 	var authUsermail  = session.Values["username"]
-	fmt.Println(authUsermail)
+	//fmt.Println(authUsermail)
 	if authenticated != nil {
 		isAuthenticated := session.Values["authenticated"].(bool)
 		if !isAuthenticated {
@@ -29,7 +29,7 @@ func (h *Handler) Home(rw http.ResponseWriter, r *http.Request) {
 
 		nameQuery := `SELECT * FROM books WHERE name ILIKE '%%' || $1 || '%%' order by id desc`
 		if err := h.db.Select(&books, nameQuery, queryFilter); err != nil {
-			fmt.Println(err)
+			
 			return
 		}
 
@@ -43,7 +43,7 @@ func (h *Handler) Home(rw http.ResponseWriter, r *http.Request) {
 		lt := BookListData{
 			Book:        books,
 			QueryFilter: queryFilter,
-			//UserEmail:   authUsermail,
+			UserEmail:   authUsermail,
 		}
 
 		if err := h.templates.ExecuteTemplate(rw, "index.html", lt); err != nil {

@@ -21,7 +21,7 @@ type BookData struct {
 type BookListData struct {
 	Book        []BookData
 	QueryFilter string
-	UserEmail string
+	UserEmail interface{}
 }
 
 func (b *BookData) Validate() error {
