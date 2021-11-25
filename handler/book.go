@@ -22,6 +22,7 @@ type BookListData struct {
 	Book        []BookData
 	QueryFilter string
 	UserEmail interface{}
+	Category []FormData
 }
 
 func (b *BookData) Validate() error {
@@ -50,9 +51,19 @@ func (h *Handler) bookList(rw http.ResponseWriter, r *http.Request) {
 		books[key].Cat_Name = category.Name
 	}
 
+	categorya := []FormData{}
+
+		namezQuery := `SELECT * FROM category  order by id desc`
+
+		if err := h.db.Select(&categorya,namezQuery ); err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+		}
+
 	lt := BookListData{
 		Book:        books,
 		QueryFilter: queryFilter,
+		Category: categorya,
 	}
 
 	if err := h.templates.ExecuteTemplate(rw, "list-book.html", lt); err != nil {

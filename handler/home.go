@@ -1,7 +1,7 @@
 package handler
 
 import (
-	
+	// "fmt"
 	"net/http"
 )
 
@@ -39,12 +39,23 @@ func (h *Handler) Home(rw http.ResponseWriter, r *http.Request) {
 			h.db.Get(&category, getCat, value.Cat_id)
 			books[key].Cat_Name = category.Name
 		}
+		
+		categorya := []FormData{}
+
+		namezQuery := `SELECT * FROM category  order by id desc`
+
+		if err := h.db.Select(&categorya,namezQuery ); err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+		}
 
 		lt := BookListData{
 			Book:        books,
 			QueryFilter: queryFilter,
 			UserEmail:   authUsermail,
+			Category: categorya,
 		}
+		// fmt.Println(lt)
 
 		if err := h.templates.ExecuteTemplate(rw, "index.html", lt); err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)

@@ -60,11 +60,22 @@
 <div class="container">
     <div class="row">
         <div class="col-12">
+            <div class="row">
             <div class="col-6">
                 <div class="form-group">
                     <input onkeydown="search(this)" value="{{.QueryFilter}}" class="form-control" autocomplete="off"  name="Searching" type="text" placeholder="Searching" />
                 </div>
             </div>
+            <div class="col-6">
+                <select class="form-control form-select-sm" id="cataaa" aria-label="Default select example">
+                    <option value="" selected>All Categories</option>
+                    {{ range $value := .Category}}
+                    <option value="{{$value.Name}}" >{{$value.Name}}</option>
+                    {{end}}
+                </select>
+            </div>
+        </div>
+
         </div>
 
         <script>
@@ -79,9 +90,8 @@
         </script>
     </div>
     <div class="row">
-
         <div class="col-12">
-            <table  class="display" style=" width: 100%; ">
+            <table id="myTable"  class="display" style=" width: 100%; ">
                 <thead>
                 <tr>
                     <th>Book Name</th>
@@ -94,7 +104,7 @@
                 <tbody>
                 {{range.Book}}
 
-                <tr>
+                <tr id="myTR">
                     <td>{{.Name}}</td>
                     <td>{{.Cat_Name}}</td>
 
@@ -123,14 +133,29 @@
         </div>
     </div>
 </div>
-
+   
 
 <!-- Optional JavaScript; choose one of the two! -->
 
 <!-- Option 1: Bootstrap Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
-        crossorigin="anonymous"></script>
+        crossorigin="anonymous"></script> -->
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
 
+
+        <script>
+            $(document).ready(function(){
+        
+                $("#cataaa").on("change", function() {
+                var value = $(this).val().toLowerCase();
+                $("#myTable #myTR").filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+                });
+            });
+        </script>
 </body>
 </html>
