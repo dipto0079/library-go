@@ -207,29 +207,3 @@ func (h *Handler) categoryDelete(rw http.ResponseWriter, r *http.Request) {
 	}
 	http.Redirect(rw, r, "/Category/List", http.StatusTemporaryRedirect)
 }
-
-
-//func (h *Handler) categorySearching(rw http.ResponseWriter, r *http.Request) {
-//	if err := r.ParseForm(); err != nil {
-//		http.Error(rw, err.Error(), http.StatusInternalServerError)
-//		return
-//	}
-//	ser := r.FormValue("Searching")
-//
-//	if ser == "" {
-//		http.Error(rw, "Invalid URL", http.StatusInternalServerError)
-//		return
-//	}
-//
-//	const getSrc = `SELECT * FROM category WHERE name ILIKE '%%' || $1 || '%%'`
-//	var cat []FormData
-//	h.db.Select(&cat, getSrc,ser)
-//
-//	lt := ListData{
-//		Category: cat,
-//	}
-//	if err := h.templates.ExecuteTemplate(rw, "list-category.html", lt); err != nil {
-//		http.Error(rw, err.Error(), http.StatusInternalServerError)
-//		return
-//	}
-//}
