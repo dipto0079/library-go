@@ -192,6 +192,6 @@ func (h *Handler) userLogout(rw http.ResponseWriter, r *http.Request) {
 	session, _ := h.sess.Get(r, sessionsName)
 	session.Values["authenticated"] = false
 	session.Save(r, rw)
-	//fmt.Fprintf(w, "Successfully Logged Out")
+	
 	http.Redirect(rw, r, "/login", http.StatusTemporaryRedirect)
 }

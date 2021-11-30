@@ -21,7 +21,6 @@ type BookData struct {
 type BookListData struct {
 	Book        []BookData
 	QueryFilter string
-	UserEmail interface{}
 	Category []FormData
 }
 

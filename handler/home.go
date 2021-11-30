@@ -1,7 +1,6 @@
 package handler
 
 import (
-	// "fmt"
 	"net/http"
 )
 
@@ -10,7 +9,7 @@ func (h *Handler) Home(rw http.ResponseWriter, r *http.Request) {
 		queryFilter := r.URL.Query().Get("query")
 
 		books := []BookData{}
-		//h.db.Select(&book, "SELECT * from books INNER JOIN category on books.cat_id = category.id")
+		
 
 		nameQuery := `SELECT * FROM books WHERE name ILIKE '%%' || $1 || '%%' order by id desc`
 		if err := h.db.Select(&books, nameQuery, queryFilter); err != nil {
@@ -37,7 +36,6 @@ func (h *Handler) Home(rw http.ResponseWriter, r *http.Request) {
 		lt := BookListData{
 			Book:        books,
 			QueryFilter: queryFilter,
-			//UserEmail:   authUsermail,
 			Category: categorya,
 		}
 
