@@ -1,28 +1,34 @@
 package handler
 
 import (
-	"github.com/gorilla/mux"
-	"github.com/gorilla/schema"
-	"github.com/jmoiron/sqlx"
 	"net/http"
 	"text/template"
+
+	"github.com/gorilla/mux"
+	"github.com/gorilla/schema"
+	"github.com/gorilla/sessions"
+	"github.com/jmoiron/sqlx"
 )
+
+const sessionsName = "library"
 
 type Handler struct {
 	templates *template.Template
 	db        *sqlx.DB
 	decoder   *schema.Decoder
+	sess      *sessions.CookieStore
 }
 
-func New(db *sqlx.DB, decoder *schema.Decoder) *mux.Router {
+func New(db *sqlx.DB, decoder *schema.Decoder, sess *sessions.CookieStore) *mux.Router {
 	h := &Handler{
 		db:      db,
 		decoder: decoder,
+		sess:    sess,
 	}
 
 	h.parseTemplates()
 	r := mux.NewRouter()
-	r.HandleFunc("/", h.Home)
+	
 	r.HandleFunc("/Registration", h.registrationCreate)
 	r.HandleFunc("/login", h.login)
 	r.HandleFunc("/User/login", h.userLogin)
@@ -30,27 +36,30 @@ func New(db *sqlx.DB, decoder *schema.Decoder) *mux.Router {
 	r.HandleFunc("/User/Store", h.UserStore)
 	//r.HandleFunc("/home/Searching", h.homeSearching)
 	//Category
-	r.HandleFunc("/Category/List", h.categoryList)
-	r.HandleFunc("/Category/create", h.categoryCreate)
-	r.HandleFunc("/Category/store", h.categoryStore)
-	r.HandleFunc("/Category/{id:[0-9]+}/edit", h.categoryEdit)
-	r.HandleFunc("/Category/{id:[0-9]+}/update", h.categoryUpdate)
-	r.HandleFunc("/Category/{id:[0-9]+}/delete", h.categoryDelete)
+	s := r.NewRoute().Subrouter()
+	s.HandleFunc("/", h.Home)
+	s.HandleFunc("/Category/List", h.categoryList)
+	s.HandleFunc("/Category/create", h.categoryCreate)
+	s.HandleFunc("/Category/store", h.categoryStore)
+	s.HandleFunc("/Category/{id:[0-9]+}/edit", h.categoryEdit)
+	s.HandleFunc("/Category/{id:[0-9]+}/update", h.categoryUpdate)
+	s.HandleFunc("/Category/{id:[0-9]+}/delete", h.categoryDelete)
 	//r.HandleFunc("/Category/Searching", h.categorySearching)
 	//Book
-	r.HandleFunc("/Book/List", h.bookList)
+	s.HandleFunc("/Book/List", h.bookList)
 	//r.HandleFunc("/Book/Searching", h.bookSearching)
-	r.HandleFunc("/Book/Create", h.bookCreate)
-	r.HandleFunc("/Book/store", h.bookStore)
-	r.HandleFunc("/Book/{id:[0-9]+}/active", h.bookActive)
-	r.HandleFunc("/Book/{id:[0-9]+}/deactivate", h.bookDeactivate)
-	r.HandleFunc("/Book/{id:[0-9]+}/edit", h.bookEdit)
-	r.HandleFunc("/Book/{id:[0-9]+}/update", h.bookUpdate)
-	r.HandleFunc("/Book/{id:[0-9]+}/delete", h.bookdelete)
+	s.HandleFunc("/Book/Create", h.bookCreate)
+	s.HandleFunc("/Book/store", h.bookStore)
+	s.HandleFunc("/Book/{id:[0-9]+}/active", h.bookActive)
+	s.HandleFunc("/Book/{id:[0-9]+}/deactivate", h.bookDeactivate)
+	s.HandleFunc("/Book/{id:[0-9]+}/edit", h.bookEdit)
+	s.HandleFunc("/Book/{id:[0-9]+}/update", h.bookUpdate)
+	s.HandleFunc("/Book/{id:[0-9]+}/delete", h.bookdelete)
 	//Booking
-	r.HandleFunc("/Booking/{id:[0-9]+}/Create", h.bookingCreate)
-	r.HandleFunc("/Booking/{id:[0-9]+}/Booking", h.bookingStore)
-	r.HandleFunc("/Booking/{id:[0-9]+}/single-list", h.bookiSingleList)
+	s.HandleFunc("/Booking/{id:[0-9]+}/Create", h.bookingCreate)
+	s.HandleFunc("/Booking/{id:[0-9]+}/Booking", h.bookingStore)
+	s.HandleFunc("/Booking/{id:[0-9]+}/single-list", h.bookiSingleList)
+	s.Use(h.authMiddleware)
 
 	r.NotFoundHandler = http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		if err := h.templates.ExecuteTemplate(rw, "404.html", nil); err != nil {
@@ -77,4 +86,15 @@ func (h *Handler) parseTemplates() {
 		"templates/single-book.html",
 		"templates/single-booking.html",
 	))
+}
+
+func (h *Handler) authMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		session, _ := h.sess.Get(r, "library")
+		if auth, ok := session.Values["authenticated"].(bool); !ok || !auth {
+			http.Redirect(rw, r, "/login", http.StatusTemporaryRedirect)
+			return
+		}
+		next.ServeHTTP(rw, r)
+	})
 }

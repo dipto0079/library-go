@@ -1,13 +1,17 @@
 package main
 
 import (
-	"example.com/m/handler"
-	"github.com/gorilla/schema"
-	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
 	"log"
 	"net/http"
+
+	"example.com/m/handler"
+	"github.com/gorilla/schema"
+	"github.com/gorilla/securecookie"
+	"github.com/gorilla/sessions"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 )
+
 
 func main() {
 	var createTable = `
@@ -51,8 +55,10 @@ CREATE TABLE IF NOT EXISTS users (
 
 	var decoder = schema.NewDecoder()
 	decoder.IgnoreUnknownKeys(true)
+	
 
-	r := handler.New(db, decoder)
+	 store := sessions.NewCookieStore([]byte(securecookie.GenerateRandomKey(32)))
+	r := handler.New(db, decoder, store)
 
 	log.Println("Server Starting....")
 	if err := http.ListenAndServe("127.0.0.1:3000", r); err != nil {

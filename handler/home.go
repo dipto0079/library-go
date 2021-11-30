@@ -7,21 +7,6 @@ import (
 
 func (h *Handler) Home(rw http.ResponseWriter, r *http.Request) {
 
-	session, _ := cookie.Get(r, "Golang-session")
-	var authenticated interface{} = session.Values["authenticated"]
-	var authUsermail  = session.Values["username"]
-	//fmt.Println(authUsermail)
-	if authenticated != nil {
-		isAuthenticated := session.Values["authenticated"].(bool)
-		if !isAuthenticated {
-			http.Redirect(rw, r, "/login", http.StatusTemporaryRedirect)
-
-			//fmt.Printf("not")
-			//http.Redirect(rw, r, "/login", http.StatusFound)
-			return
-		}
-		//	fmt.Printf("Ok")
-
 		queryFilter := r.URL.Query().Get("query")
 
 		books := []BookData{}
@@ -52,15 +37,15 @@ func (h *Handler) Home(rw http.ResponseWriter, r *http.Request) {
 		lt := BookListData{
 			Book:        books,
 			QueryFilter: queryFilter,
-			UserEmail:   authUsermail,
+			//UserEmail:   authUsermail,
 			Category: categorya,
 		}
-		// fmt.Println(lt)
+
 
 		if err := h.templates.ExecuteTemplate(rw, "index.html", lt); err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	}
+
 
 }

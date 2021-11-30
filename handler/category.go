@@ -3,7 +3,6 @@ package handler
 import (
 	"net/http"
 	"strconv"
-
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gorilla/mux"
 )
