@@ -6,12 +6,11 @@ import (
 
 	"example.com/m/handler"
 	"github.com/gorilla/schema"
-	"github.com/gorilla/securecookie"
+	
 	"github.com/gorilla/sessions"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
-
 
 func main() {
 	var createTable = `
@@ -21,6 +20,7 @@ CREATE TABLE IF NOT EXISTS category (
 		
 		primary key(id)
 	);
+
 CREATE TABLE IF NOT EXISTS books (
 		id serial,
 		name text,
@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS books (
 		
 		primary key(id)
 	);
+
 CREATE TABLE IF NOT EXISTS bookings (
 		id serial,
 		book_id integer,
@@ -37,6 +38,7 @@ CREATE TABLE IF NOT EXISTS bookings (
 		end_time timestamp,
 		primary key(id)
 	);
+
 CREATE TABLE IF NOT EXISTS users (
 		id serial,
 		name text,
@@ -55,9 +57,8 @@ CREATE TABLE IF NOT EXISTS users (
 
 	var decoder = schema.NewDecoder()
 	decoder.IgnoreUnknownKeys(true)
-	
 
-	 store := sessions.NewCookieStore([]byte(securecookie.GenerateRandomKey(32)))
+	store := sessions.NewCookieStore([]byte("19C451AEDFB24C338A9A2A5C31D66051"))
 	r := handler.New(db, decoder, store)
 
 	log.Println("Server Starting....")

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"text/template"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/gorilla/schema"
 	"github.com/gorilla/sessions"
 	"github.com/jmoiron/sqlx"
+	
 )
 
 const sessionsName = "library"
@@ -28,12 +30,17 @@ func New(db *sqlx.DB, decoder *schema.Decoder, sess *sessions.CookieStore) *mux.
 
 	h.parseTemplates()
 	r := mux.NewRouter()
+	l := r.NewRoute().Subrouter()
+	l.HandleFunc("/login", h.login)
+	l.HandleFunc("/Registration", h.registrationCreate)
+	l.HandleFunc("/User/Store", h.UserStore)
+	l.HandleFunc("/User/login", h.userLogin)
+
+	l.Use(h.loginMiddleware)
 	
-	r.HandleFunc("/Registration", h.registrationCreate)
-	r.HandleFunc("/login", h.login)
-	r.HandleFunc("/User/login", h.userLogin)
+
 	r.HandleFunc("/User/logout", h.userLogout)
-	r.HandleFunc("/User/Store", h.UserStore)
+	//s.Use(h.loginMiddleware)
 	//r.HandleFunc("/home/Searching", h.homeSearching)
 	//Category
 	s := r.NewRoute().Subrouter()
@@ -44,10 +51,9 @@ func New(db *sqlx.DB, decoder *schema.Decoder, sess *sessions.CookieStore) *mux.
 	s.HandleFunc("/Category/{id:[0-9]+}/edit", h.categoryEdit)
 	s.HandleFunc("/Category/{id:[0-9]+}/update", h.categoryUpdate)
 	s.HandleFunc("/Category/{id:[0-9]+}/delete", h.categoryDelete)
-	//r.HandleFunc("/Category/Searching", h.categorySearching)
+	
 	//Book
 	s.HandleFunc("/Book/List", h.bookList)
-	//r.HandleFunc("/Book/Searching", h.bookSearching)
 	s.HandleFunc("/Book/Create", h.bookCreate)
 	s.HandleFunc("/Book/store", h.bookStore)
 	s.HandleFunc("/Book/{id:[0-9]+}/active", h.bookActive)
@@ -96,5 +102,19 @@ func (h *Handler) authMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		next.ServeHTTP(rw, r)
+	})
+}
+func (h *Handler) loginMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		session, err := h.sess.Get(r, sessionsName)
+		if err!=nil {
+			log.Fatal(err)
+		}
+		authuser:=session.Values["authenticated"]
+		if authuser != nil {
+			http.Redirect(rw, r, "/", http.StatusTemporaryRedirect)
+		}else{
+			next.ServeHTTP(rw, r)
+		}
 	})
 }

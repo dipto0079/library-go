@@ -191,6 +191,7 @@ func (h *Handler) userLogout(rw http.ResponseWriter, r *http.Request) {
 
 	session, _ := h.sess.Get(r, sessionsName)
 	session.Values["authenticated"] = false
+	session.Options.MaxAge = -1
 	session.Save(r, rw)
 	
 	http.Redirect(rw, r, "/login", http.StatusTemporaryRedirect)
