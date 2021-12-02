@@ -1,8 +1,12 @@
 package handler
 
 import (
+	"fmt"
+	"math"
 	"net/http"
+
 	"strconv"
+
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gorilla/mux"
 )
@@ -22,22 +26,77 @@ func (c *FormData) Validate() error {
 type ListData struct {
 	Category []FormData
 	QueryFilter string
+	Pagination  []Pagination
+	CurrentPage int
+	PrePageURL  string
+	NextPageURL string
+}
+type Pagination struct{
+	URL string
+	PageNo int
 }
 
 // Show
 func (h *Handler) categoryList(rw http.ResponseWriter, r *http.Request) {
-	queryFilter := r.URL.Query().Get("query")
-	category := []FormData{}
 
-	nameQuery := `SELECT * FROM category WHERE name ILIKE '%%' || $1 || '%%' order by id desc`
-	if err := h.db.Select(&category, nameQuery, queryFilter); err != nil {
+	var p int
+	var err error
+	var nextPageURL string
+	var prePageURL string
+
+	page := r.URL.Query().Get("page")
+	if page != "" {
+		p, err = strconv.Atoi(page)
+	}
+
+	if err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
+	}
+	offset := 0
+	limit := 3
+
+	if p > 0 {
+		offset = limit * p - limit
+	}
+	
+	total := 0
+	h.db.Get(&total, "SELECT count(*) FROM categories")
+		// queryFilter := r.URL.Query().Get("query")
+	category := []FormData{}
+
+	h.db.Get(&total, "SELECT count(*) FROM category")
+    	h.db.Select(&category, "SELECT * FROM category OFFSET $1 LIMIT $2", offset, limit)
+
+	// nameQuery := `SELECT * FROM category WHERE name ILIKE '%%' || $1 || '%%' order by id desc`
+	// if err := h.db.Select(&category, nameQuery, queryFilter,); err != nil {
+	// 	http.Error(rw, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+
+
+	totalPage := int(math.Ceil(float64(total)/float64(limit)))
+	pagination := make([]Pagination,totalPage)
+	for i:=0; i<totalPage; i++ {
+		pagination[i] = Pagination{
+			URL: fmt.Sprintf("http://localhost:3000/Category/List?page=%d", i +1),
+			PageNo: i +1,
+		}
+		if i + 1 == p {
+			if i != 0 {
+				prePageURL = fmt.Sprintf("http://localhost:3000/Category/List?page=%d", i)
+			}else{
+				nextPageURL = fmt.Sprintf("http://localhost:3000/Category/List?page=%d", i +2)
+			}
+		}
 	}
 
 	lt := ListData{
 		Category: category,
-		QueryFilter: queryFilter,
+		Pagination: pagination,
+		CurrentPage: p,
+		PrePageURL: prePageURL,
+		NextPageURL: nextPageURL,
 	}
 	if err := h.templates.ExecuteTemplate(rw, "list-category.html", lt); err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
