@@ -67,6 +67,8 @@ func New(db *sqlx.DB, decoder *schema.Decoder, sess *sessions.CookieStore) *mux.
 	s.HandleFunc("/Booking/{id:[0-9]+}/single-list", h.bookiSingleList)
 	s.Use(h.authMiddleware)
 
+	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets"))))
+
 	r.NotFoundHandler = http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		if err := h.templates.ExecuteTemplate(rw, "404.html", nil); err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)

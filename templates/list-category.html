@@ -96,7 +96,7 @@
             {{ range .Pagination}}
                 <li class="page-item">
                     {{if eq $.CurrentPage .PageNo}}
-                        <span class="page-link" style="background-color: rgb(255, 141, 47);">{{.PageNo}}</span>
+                        <span class="page-link" style="background-color: rgba(231, 47, 255, 0.425);">{{.PageNo}}</span>
                     {{else}}
                         <a class="page-link" href="{{.URL}}">{{.PageNo}}</a>
                     {{end}}
