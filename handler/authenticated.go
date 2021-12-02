@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -22,6 +23,14 @@ type loginData struct {
 	Errors   map[string]string
 }
 
+type Forgot struct{
+	ID int
+	Name string
+	Email    string `db:"email"`
+	Password string
+	Errors   map[string]string
+}
+
 func (L *loginData) Validate() error {
 	return validation.ValidateStruct(L,
 		validation.Field(&L.Email, validation.Required.Error("This Filed cannot be blank")),
@@ -37,6 +46,11 @@ func (R *RegistrationData) Validate() error {
 	)
 }
 
+func (f *Forgot) Validate() error {
+	return validation.ValidateStruct(f,
+		validation.Field(&f.Email, validation.Required.Error("This Filed cannot be blank")),
+	)
+}
 // Add
 func (h *Handler) registrationCreate(rw http.ResponseWriter, r *http.Request) {
 
@@ -193,6 +207,77 @@ func (h *Handler) userLogout(rw http.ResponseWriter, r *http.Request) {
 	session.Values["authenticated"] = false
 	session.Options.MaxAge = -1
 	session.Save(r, rw)
+	
+	http.Redirect(rw, r, "/login", http.StatusTemporaryRedirect)
+}
+
+func (h *Handler) userForgot(rw http.ResponseWriter, r *http.Request) {
+
+	vErrs := map[string]string{"name": "", "email": "", "password": ""}
+	
+	email := ""
+
+	h.forgotFormData(rw, email, vErrs)
+	return
+}
+
+
+func (h *Handler) forgotFormData(rw http.ResponseWriter, email string, errs map[string]string) {
+	form := Forgot{
+		Email:    email,
+		Errors:   errs,
+	}
+	if err := h.templates.ExecuteTemplate(rw, "auth-recoverpw.html", form); err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+
+func (h *Handler) userForgotCheck(rw http.ResponseWriter, r *http.Request) {
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	var usera Forgot
+	if err := h.decoder.Decode(&usera, r.PostForm); err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if aErr := usera.Validate(); aErr != nil {
+		vErrors, ok := aErr.(validation.Errors)
+		if ok {
+			vErr := make(map[string]string)
+			for key, value := range vErrors {
+				vErr[key] = value.Error()
+			}
+			h.forgotFormData(rw, usera.Email, vErr)
+			return
+		}
+		http.Error(rw, aErr.Error(), http.StatusInternalServerError)
+		return
+	}
+	var usermail = usera.Email
+
+	fmt.Println(usermail)
+
+
+	const getuser = `SELECT * FROM users WHERE email=$1 `
+	var loginuser Forgot
+	aerr := h.db.Get(&loginuser, getuser, usermail)
+
+	fmt.Println(aerr)
+	
+
+	
+
+	if aerr != nil {
+		http.Error(rw, aerr.Error(), http.StatusInternalServerError)
+		return
+	}
+	 
 	
 	http.Redirect(rw, r, "/login", http.StatusTemporaryRedirect)
 }

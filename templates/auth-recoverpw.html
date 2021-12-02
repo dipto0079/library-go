@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <title>Register & Signup | UBold - Responsive Admin Dashboard Template</title>
+        <title>Forgot Password | UBold - Responsive Admin Dashboard Template</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta content="A fully featured admin theme which can be used to build CRM, CMS, etc." name="description" />
         <meta content="Coderthemes" name="author" />
@@ -34,49 +34,33 @@
                                 
                                 <div class="text-center w-75 m-auto">
                                     <div class="auth-logo">
-                                        <a href="index.html" class="logo logo-dark text-center">
+                                        <a href="/" class="logo logo-dark text-center">
                                             <span class="logo-lg">
                                                 <img src="assets/assets/images/logo-dark.png" alt="" height="22">
                                             </span>
                                         </a>
                     
-                                        <a href="index.html" class="logo logo-light text-center">
+                                        <a href="/" class="logo logo-light text-center">
                                             <span class="logo-lg">
                                                 <img src="assets/assets/images/logo-light.png" alt="" height="22">
                                             </span>
                                         </a>
                                     </div>
-                                    <p class="text-muted mb-4 mt-3">Don't have an account? Create your account, it takes less than a minute</p>
+                                    <p class="text-muted mb-4 mt-3">Enter your email address and we'll send you an email with instructions to reset your password.</p>
                                 </div>
 
-                                <form method="post" action="/User/Store">
-                                    <div class="form-group">
-                                        <label for="fullname">Full Name</label>
-                                        <input class="form-control" type="text" name="Name" id="fullname" placeholder="Enter your name" required>
-                                    </div>
-                                    <div class="form-group">
+                                <form method="post" action="/User/Forgot/check">
+
+                                    <div class="form-group mb-3">
                                         <label for="emailaddress">Email address</label>
-                                        <input class="form-control" type="email" name="Email" id="emailaddress" required placeholder="Enter your email">
+                                        <input class="form-control" type="email" name="Email" id="emailaddress" required="" placeholder="Enter your email">
                                     </div>
-                                    <div class="form-group">
-                                        <label for="password">Password</label>
-                                        <div class="input-group input-group-merge">
-                                            <input type="password" id="password" name="Password" class="form-control" placeholder="Enter your password">
-                                            <div class="input-group-append" data-password="false">
-                                                <div class="input-group-text">
-                                                    <span class="password-eye"></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
+
                                     <div class="form-group mb-0 text-center">
-                                        <button class="btn btn-success btn-block" type="submit"> Sign Up </button>
+                                        <button class="btn btn-primary btn-block" type="submit"> Reset Password </button>
                                     </div>
 
                                 </form>
-
-                                
 
                             </div> <!-- end card-body -->
                         </div>
@@ -84,7 +68,7 @@
 
                         <div class="row mt-3">
                             <div class="col-12 text-center">
-                                <p class="text-white-50">Already have account?  <a href="auth-login.html" class="text-white ml-1"><b>Sign In</b></a></p>
+                                <p class="text-white-50">Back to <a href="/login" class="text-white ml-1"><b>Log in</b></a></p>
                             </div> <!-- end col -->
                         </div>
                         <!-- end row -->
@@ -96,6 +80,7 @@
             <!-- end container -->
         </div>
         <!-- end page -->
+
 
         <footer class="footer footer-alt">
             2015 - <script>document.write(new Date().getFullYear())</script> &copy; UBold theme by <a href="" class="text-white-50">Coderthemes</a> 
