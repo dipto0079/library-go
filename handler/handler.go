@@ -35,6 +35,7 @@ func New(db *sqlx.DB, decoder *schema.Decoder, sess *sessions.CookieStore) *mux.
 	l.HandleFunc("/Registration", h.registrationCreate)
 	l.HandleFunc("/User/Store", h.UserStore)
 	l.HandleFunc("/User/login", h.userLogin)
+	l.HandleFunc("/verified", h.userVerified)
 
 	l.Use(h.loginMiddleware)
 	

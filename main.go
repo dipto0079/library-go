@@ -44,6 +44,8 @@ CREATE TABLE IF NOT EXISTS users (
 		name text,
 		email text,
 		password  text,
+		email_verified  text,
+		status boolean,
 
 		primary key(id)
 	);
