@@ -226,11 +226,11 @@ func (h *Handler) userLogin(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var usermail = usera.Email
-	var active = true
+	
 	//	fmt.Println(hashedPassword)
-	const getuser = `SELECT * FROM users WHERE email=$1 WHERE status = $2 `
+	const getuser = `SELECT * FROM users WHERE email=$1 `
 	var loginuser RegistrationData
-	aerr := h.db.Get(&loginuser, getuser, usermail,active)
+	aerr := h.db.Get(&loginuser, getuser, usermail)
 	if loginuser.ID == 0 {
 		vErrs := map[string]string{"email": "", "password": ""}
 
