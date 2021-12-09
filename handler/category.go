@@ -45,6 +45,7 @@ func (h *Handler) categoryList(rw http.ResponseWriter, r *http.Request) {
 	var prePageURL string
 
 	page := r.URL.Query().Get("page")
+	
 	if page != "" {
 		p, err = strconv.Atoi(page)
 	}
@@ -61,12 +62,13 @@ func (h *Handler) categoryList(rw http.ResponseWriter, r *http.Request) {
 	}
 	
 	total := 0
-	h.db.Get(&total, "SELECT count(*) FROM categories")
+
+	//h.db.Get(&total, "SELECT count(*) FROM categories")
 		// queryFilter := r.URL.Query().Get("query")
 	category := []FormData{}
 
 	h.db.Get(&total, "SELECT count(*) FROM category")
-    	h.db.Select(&category, "SELECT * FROM category OFFSET $1 LIMIT $2", offset, limit)
+    h.db.Select(&category, "SELECT * FROM category OFFSET $1 LIMIT $2", offset, limit)
 
 	// nameQuery := `SELECT * FROM category WHERE name ILIKE '%%' || $1 || '%%' order by id desc`
 	// if err := h.db.Select(&category, nameQuery, queryFilter,); err != nil {

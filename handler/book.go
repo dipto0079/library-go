@@ -35,6 +35,7 @@ func (b *BookData) Validate() error {
 
 // Show
 func (h *Handler) bookList(rw http.ResponseWriter, r *http.Request) {
+	
 	queryFilter := r.URL.Query().Get("query")
 
 	books := []BookData{}

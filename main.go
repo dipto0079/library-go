@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS users (
 		password  text,
 		email_verified  text,
 		status boolean,
+		forgot text,
 
 		primary key(id)
 	);

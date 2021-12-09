@@ -43,6 +43,9 @@ func New(db *sqlx.DB, decoder *schema.Decoder, sess *sessions.CookieStore) *mux.
 	r.HandleFunc("/User/logout", h.userLogout)
 	r.HandleFunc("/Forgot", h.userForgot)
 	r.HandleFunc("/User/Forgot/check", h.userForgotCheck)
+	r.HandleFunc("/Forgot/verified", h.forgotCheck)
+	r.HandleFunc("/Password", h.password)
+	r.HandleFunc("/Password/Update", h.passwordUpdate)
 	//s.Use(h.loginMiddleware)
 	//r.HandleFunc("/home/Searching", h.homeSearching)
 	//Category
@@ -97,6 +100,7 @@ func (h *Handler) parseTemplates() {
 		"templates/single-book.html",
 		"templates/single-booking.html",
 		"templates/auth-recoverpw.html",
+		"templates/con_pass.html",
 	))
 }
 

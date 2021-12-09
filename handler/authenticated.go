@@ -6,11 +6,11 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log"
-	
+	"time"
+
 	"net/http"
 	"net/smtp"
 	"text/template"
-
 
 	validation "github.com/go-ozzo/ozzo-validation"
 	"golang.org/x/crypto/bcrypt"
@@ -23,12 +23,19 @@ type RegistrationData struct {
 	Password string `db:"password"`
 	Email_verified string `db:"email_verified"`
 	Status bool `db:"status,"`
+	Forget string `db:"forgot,"`
 	Errors   map[string]string
 }
 type loginData struct {
 	Email    string
 	Password string
 	Errors   map[string]string
+}
+
+type ConPass struct{
+	ID string
+	Password string
+	ConfirmPassword string
 }
 
 type Forgot struct {
@@ -57,6 +64,14 @@ func (R *RegistrationData) Validate() error {
 func (f *Forgot) Validate() error {
 	return validation.ValidateStruct(f,
 		validation.Field(&f.Email, validation.Required.Error("This Filed cannot be blank")),
+	)
+}
+
+func (c *ConPass) ConPass () error {
+	return validation.ValidateStruct(c,
+		validation.Field(&c.ID, validation.Required.Error("This Filed cannot be blank")),
+		validation.Field(&c.Password, validation.Required.Error("This Filed cannot be blank")),
+		validation.Field(&c.ConfirmPassword, validation.Required.Error("This Filed cannot be blank")),
 	)
 }
 
@@ -119,7 +134,8 @@ func (h *Handler) UserStore(rw http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	s := user.Email
+	s := user.Email + string(time.Now().Unix())
+
   
     se := base64.StdEncoding.EncodeToString([]byte(s))
 	
@@ -132,7 +148,7 @@ func (h *Handler) UserStore(rw http.ResponseWriter, r *http.Request) {
 
 	// Sender data.
 	from := "sudipto397@gmail.com"
-	password := "Su_Dipto@397"
+	password := "pass"
 
 	// Receiver email address.
 	to := []string{
@@ -207,6 +223,7 @@ func (h *Handler) userLogin(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var usera loginData
+
 	if err := h.decoder.Decode(&usera, r.PostForm); err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
@@ -231,12 +248,17 @@ func (h *Handler) userLogin(rw http.ResponseWriter, r *http.Request) {
 	const getuser = `SELECT * FROM users WHERE email=$1 `
 	var loginuser RegistrationData
 	aerr := h.db.Get(&loginuser, getuser, usermail)
+	//fmt.Println(loginuser)
 	if loginuser.ID == 0 {
 		vErrs := map[string]string{"email": "", "password": ""}
 
 		email := ""
 		password := ""
 		h.loginFormData(rw, email, password, vErrs)
+	}
+	if loginuser.Status == false {
+
+		http.Redirect(rw, r, "/login", http.StatusTemporaryRedirect)
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(loginuser.Password), []byte(usera.Password)); err != nil {
@@ -255,6 +277,7 @@ func (h *Handler) userLogin(rw http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	
 	session.Values["authenticated"] = true
 	session.Values["username"] = loginuser.ID
 
@@ -326,16 +349,31 @@ func (h *Handler) userForgotCheck(rw http.ResponseWriter, r *http.Request) {
 	//const getuser = ` `
 	var loginuser RegistrationData
 	h.db.Get(&loginuser, "SELECT * FROM users WHERE email=$1", usermail)
+	
+	s := loginuser.Email + string(time.Now().Unix())
+	se := base64.StdEncoding.EncodeToString([]byte(s))
+	
 
-	///	fmt.Println(loginuser)
+	email_verified := se
+	//fmt.Println(email_verified)
+	
+	const updateForgot = `UPDATE users SET forgot=$1 WHERE email=$2`
+	res := h.db.MustExec(updateForgot, email_verified, loginuser.Email)
+
+	if ok, err := res.RowsAffected(); err != nil || ok == 0 {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	//res := h.db.MustExec(insertUser, user.Name, user.Email, string(pass),email_verified,Status)
 
 	// Sender data.
 	from := "sudipto397@gmail.com"
-	password := "Su_Dipto@397"
+	password := ""
 
 	// Receiver email address.
 	to := []string{
-		usermail,
+		user.Email,
 	}
 
 	// smtp server configuration.
@@ -345,45 +383,47 @@ func (h *Handler) userForgotCheck(rw http.ResponseWriter, r *http.Request) {
 	// Authentication.
 	auth := smtp.PlainAuth("", from, password, smtpHost)
 
-	t, _ := template.ParseFiles("templates/template.html")
+	t, _ := template.ParseFiles("templates/template _copy.html")
 
 	var body bytes.Buffer
 
 	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
 	body.Write([]byte(fmt.Sprintf("Subject: This is a test subject \n%s\n\n", mimeHeaders)))
 
+
+	var linkadd = fmt.Sprintf("http://localhost:3000/Forgot/verified?token=%s", email_verified)
+
 	t.Execute(&body, struct {
 		Name    string
-		Message string
+		Link string
 	}{
-		Name:    "All Ok",
-		Message: "This is a test message in a HTML template",
+		Name:    user.Name,
+		Link:  linkadd,
 	})
 
 	// Sending email.
-	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, body.Bytes())
-	if err != nil {
-		fmt.Println(err)
+	qerr := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, body.Bytes())
+	if qerr != nil {
+		fmt.Println(qerr)
 		return
 	}
 	fmt.Println("Email Sent!")
-
+	if ok, err := res.RowsAffected(); err != nil || ok == 0 {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	http.Redirect(rw, r, "/login", http.StatusTemporaryRedirect)
 }
 func (h *Handler) userVerified(rw http.ResponseWriter, r *http.Request) {
 
 	token := r.URL.Query().Get("token")
 	
-	fmt.Println(token)
-
+//	fmt.Println(token)
 
 	const getuser = `SELECT * FROM users WHERE email_verified=$1`
 	var loginuser RegistrationData
 	h.db.Get(&loginuser, getuser, token)
 
-
-
-	fmt.Println(loginuser.ID)
 	
 	const updateStatusUser = `UPDATE users SET status = true WHERE id=$1`
 	res := h.db.MustExec(updateStatusUser, loginuser.ID)
@@ -396,3 +436,98 @@ func (h *Handler) userVerified(rw http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(rw, r, "/login", http.StatusTemporaryRedirect)
 }
+
+
+func (h *Handler) forgotCheck(rw http.ResponseWriter, r *http.Request) {
+
+	token := r.URL.Query().Get("token")
+	
+	//fmt.Println(token)
+	const getuser = `SELECT * FROM users WHERE forgot=$1`
+	var loginuser RegistrationData
+	h.db.Get(&loginuser, getuser, token)
+
+	if loginuser.ID == 0{
+		log.Printf("token not ok")
+	}
+
+	//fmt.Println(loginuser.ID)
+
+	userId := loginuser.ID 
+
+	http.Redirect(rw, r, fmt.Sprintf("http://localhost:3000/Password?token=%d",+userId), http.StatusSeeOther)
+
+}
+
+
+func (h *Handler) password(rw http.ResponseWriter, r *http.Request) {
+
+	token := r.URL.Query().Get("token")
+	
+	fmt.Println(token)
+
+	vErrs := map[string]string{}
+	
+	mailToken := token
+	
+	h.forgotFormPassData(rw, mailToken, vErrs)
+	return
+
+}
+
+func (h *Handler) forgotFormPassData(rw http.ResponseWriter, token string, errs map[string]string) {
+
+	form := ConPass{
+		 ID:  token,	
+	}
+	if err := h.templates.ExecuteTemplate(rw, "con_pass.html", form); err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *Handler) passwordUpdate(rw http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var pass ConPass
+
+	if err := h.decoder.Decode(&pass, r.PostForm); err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if aErr := pass.ConPass(); aErr != nil {
+		vErrors, ok := aErr.(validation.Errors)
+		if ok {
+			vErr := make(map[string]string)
+			for key, value := range vErrors {
+				vErr[key] = value.Error()
+			}
+			h.forgotFormPassData(rw, pass.Password, vErr)
+			return
+		}
+		http.Error(rw, aErr.Error(), http.StatusInternalServerError)
+		return
+	}
+
+
+	userInterPass, err := bcrypt.GenerateFromPassword([]byte(pass.Password), bcrypt.DefaultCost)
+	if err != nil {
+		log.Fatal(userInterPass)
+	}
+
+	newPass:= string(userInterPass)
+
+	const updatepass = `UPDATE users SET password=$1 WHERE id=$2`
+	res := h.db.MustExec(updatepass, newPass, pass.ID)
+
+	if ok, err := res.RowsAffected(); err != nil || ok == 0 {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(rw, r, "/login", http.StatusTemporaryRedirect)
+}
+
