@@ -12,6 +12,9 @@ import (
 	_ "github.com/lib/pq"
 )
 
+
+
+
 func main() {
 	var createTable = `
 CREATE TABLE IF NOT EXISTS category (
